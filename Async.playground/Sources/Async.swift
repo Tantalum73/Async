@@ -160,11 +160,22 @@ public struct Async {
     }
     
     
+    /**
+     Function to collect calls to Async.Main(...), .Background(...) and others to perform the operation.
+     Performing a dispatch_after if a delay is specified or dispatch_group_async otherwise.
+     
+     - parameter delay: Delay in seconds after which the code will be executed.
+     - parameter block: The block that should be scheduled.
+     - parameter queue: Queue on which the block should be run.
+     
+     - returns: Async object for example to chain another block to.
+     */
     private static func scheduleBlock(after delay: Double? = nil, block: dispatch_block_t, onQueue queue: dispatch_queue_t) -> Async {
+        
+                // Creating a copy by inheriting the original QOS_Class to chain other blocks by using dispatch_notify to it.
         let newblock = dispatch_block_create(DISPATCH_BLOCK_INHERIT_QOS_CLASS, block)
         
         if let delayInSeconds = delay {
-            print("delay recognized")
             let popTime = dispatch_time(DISPATCH_TIME_NOW,
                                         Int64(delayInSeconds * Double(NSEC_PER_SEC)))
             dispatch_after(popTime, queue, newblock)
@@ -179,6 +190,15 @@ public struct Async {
         return Async(block: newblock)
     }
     
+    
+    /**
+     Matches a QualityOfService case to an actual dispatch_queue_t.
+     It uses dispatch_get_main_queue() if the main queue is requested or dispatch_get_global_queue() with desired QOS_Class otherwise.
+     
+     - parameter qos: The Quality Of Service that the user requests, for example .Main or .Background.
+     
+     - returns: A queue of type dispatch_queue_t. Blocks can be scheduled on this queue.
+     */
     private static func queueForQualityOfService(qos: QualityOfService) -> dispatch_queue_t {
         
         let qualityOfServiceClass : qos_class_t
