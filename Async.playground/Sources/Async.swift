@@ -3,7 +3,7 @@
 //  
 //
 //  Created by Andreas Neusüß on 12.05.16.
-//
+//  Copyright © 2016 Andreas Neusuess. All rights reserved.
 //
 
 import Foundation
@@ -224,37 +224,106 @@ public struct Async {
     }
     
     
+    /**
+    Perform a async operation on the main queue after previous block is done.
     
+    **What kind of operations should be performed on the main queue?**
+    
+    Perform any kind of UI operations on the main thread. *Always.*
+    
+    - parameter after: Delay after which the block is executed. Defaults to no delay.
+    - parameter block: The block that will be executed when the previous block is done. The method chains them together. A copy is made to apply a completion block to it.
+    
+    - returns: Async object for example to chain another block to.
+    - seeAlso: QualityOfService
+     */
     public func main(after after: Double? = nil, block: dispatch_block_t) -> Async {
         let queue = Async.queueForQualityOfService(.Main)
         
         return chainBlock(after: after, block: block, onQueue: queue)
     }
     
+    /**
+     Perform a async operation a queue that runs with *background* priority after previous block is done.
+     
+     **What kind of operations should be performed on the main queue?** *Apples documentation says:*
+     Work that operates in the background and isn’t visible to the user, such as indexing, synchronizing, and backups. Focuses on energy efficiency.
+     
+     - parameter after: Delay after which the block is executed. Defaults to no delay.
+     - parameter block: The block that will be executed when the previous block is done. The method chains them together. A copy is made to apply a completion block to it.
+     
+     - returns: Async object for example to chain another block to.
+     - seeAlso: QualityOfService
+     */
     public func background(after after: Double? = nil, block: dispatch_block_t) -> Async {
         let queue = Async.queueForQualityOfService(.Background)
         
         return chainBlock(after: after, block: block, onQueue: queue)
     }
     
+    /**
+     Perform a async operation a queue that runs with *user-interactive* priority after previous block is done.
+     
+     **What kind of operations should be performed on the main queue?** *Apples documentation says:*
+     Work that is interacting with the user, such as operating on the main thread, refreshing the user interface, or performing animations. If the work doesn’t happen quickly, the user interface may appear frozen. Focuses on responsiveness and performance.
+     
+     - parameter after: Delay after which the block is executed. Defaults to no delay.
+     - parameter block: The block that will be executed when the previous block is done. The method chains them together. A copy is made to apply a completion block to it.
+     
+     - returns: Async object for example to chain another block to.
+     - seeAlso: QualityOfService
+     */
     public func userInteractive(after after: Double? = nil, block: dispatch_block_t) -> Async {
         let queue = Async.queueForQualityOfService(.UserInteractive)
         
         return chainBlock(after: after, block: block, onQueue: queue)
     }
     
+    /**
+     Perform a async operation a queue that runs with *user-initiated* priority after previous block is done.
+     
+     **What kind of operations should be performed on the main queue?** *Apples documentation says:*
+     Work that the user has initiated and requires immediate results, such as opening a saved document or performing an action when the user clicks something in the user interface. The work is required in order to continue user interaction. Focuses on responsiveness and performance.
+     
+     - parameter after: Delay after which the block is executed. Defaults to no delay.
+     - parameter block: The block that will be executed when the previous block is done. The method chains them together. A copy is made to apply a completion block to it.
+     
+     - returns: Async object for example to chain another block to.
+     - seeAlso: QualityOfService
+     */
     public func userInitiated(after after: Double? = nil, block: dispatch_block_t) -> Async {
         let queue = Async.queueForQualityOfService(.UserInitiated)
         
         return chainBlock(after: after, block: block, onQueue: queue)
     }
     
+    /**
+     Perform a async operation a queue that runs with *utility* priority after previous block is done.
+     
+     **What kind of operations should be performed on the main queue?** *Apples documentation says:*
+     Work that may take some time to complete and doesn’t require an immediate result, such as downloading or importing data. Utility tasks typically have a progress bar that is visible to the user. Focuses on providing a balance between responsiveness, performance, and energy efficiency.
+     
+     - parameter after: Delay after which the block is executed. Defaults to no delay.
+     - parameter block: The block that will be executed when the previous block is done. The method chains them together. A copy is made to apply a completion block to it.
+     
+     - returns: Async object for example to chain another block to.
+     - seeAlso: QualityOfService
+     */
     public func utility(after after: Double? = nil, block: dispatch_block_t) -> Async {
         let queue = Async.queueForQualityOfService(.Utility)
         
         return chainBlock(after: after, block: block, onQueue: queue)
     }
     
+    /**
+     Perform a async operation a queue that runs with *default* priority after previous block is done.
+     
+     - parameter after: Delay after which the block is executed. Defaults to no delay.
+     - parameter block: The block that will be executed when the previous block is done. The method chains them together. A copy is made to apply a completion block to it.
+     
+     - returns: Async object for example to chain another block to.
+     - seeAlso: QualityOfService
+     */
     public func defaultPriority(after after: Double? = nil, block: dispatch_block_t) -> Async {
         let queue = Async.queueForQualityOfService(.Default)
         
