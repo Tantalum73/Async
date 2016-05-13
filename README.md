@@ -1,2 +1,2 @@
 # Async
-Wrapper around Grand Central Dispatch
+A lightweight wrapper around Grand Central Dispatch
