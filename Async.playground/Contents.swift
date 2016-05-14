@@ -8,7 +8,7 @@ print("Starting")
 
 XCPlaygroundPage.currentPage.needsIndefiniteExecution = true
 
-
+//Use this style:
 Async.async(QOS: .Main, block: {
     print("starting Task 1")
     let timeInterval = Double(arc4random_uniform(100)) * 0.01
@@ -24,6 +24,7 @@ Async.async(QOS: .Main, block: {
     print("Finish task 3")
 }
 
+//Or you can use this syntax:
 Async.main(block: {
     print("starting Task 1")
     let timeInterval = Double(arc4random_uniform(100)) * 0.01
