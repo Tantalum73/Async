@@ -144,7 +144,7 @@ public struct Async {
      Generalized function to provide an alternative syntax for queueing a block.
      You can call this method with a gviven QOS parameter to specify the queue on which the block should be performed on.
      
-     This method plays along nicer with the *.than* method but again, it's just an optional way to query blocks by not using one of the above methods.
+     This method plays along nicer with the ```.than``` method but again, it's just an optional way to query blocks by not using one of the above methods.
      
      - parameter after: Delay after which the block is executed. Defaults to no delay.
      - parameter QOS:   QualityOfService that specifies on which priority the block should be run. For example, you can provide .Main to run on the main queue or .Background to run on a background priority queue.
@@ -330,12 +330,25 @@ public struct Async {
         return chainBlock(after: after, block: block, onQueue: queue)
     }
     
-    
+    /**
+     Generalized function to provide an alternative syntax for queueing a block.
+     You can call this method with a gviven QOS parameter to specify the queue on which the block should be performed on.
+     
+     This method plays along nicer with the ```.async``` method but again, it's just an optional way to query blocks by not using one of the above methods.
+     
+     - parameter after: Delay after which the block is executed. Defaults to no delay.
+     - parameter QOS:   QualityOfService that specifies on which priority the block should be run. For example, you can provide .Main to run on the main queue or .Background to run on a background priority queue.
+     - parameter block: The block that will be executed when the previous block is done. The method chains them together. A copy is made to apply a completion block to it.
+     
+     - returns: Async object for example to chain another block to.
+     - seeAlso: QualityOfService
+     */
     public func then(after after: Double? = nil, QOS: QualityOfService, block: dispatch_block_t) -> Async {
         let queue = Async.queueForQualityOfService(QOS)
         
         return chainBlock(after: after, block: block, onQueue: queue)
     }
+
     
     private func chainBlock(after delay: Double? = nil, block: dispatch_block_t, onQueue queue: dispatch_queue_t) -> Async {
         let newblock = dispatch_block_create(DISPATCH_BLOCK_INHERIT_QOS_CLASS, block)
