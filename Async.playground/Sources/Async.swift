@@ -161,7 +161,7 @@ public struct Async {
     
     
     /**
-     Function to collect calls to Async.Main(...), .Background(...) and others to perform the operation.
+     Function to collect calls to ```Async.Main(...)```, .```Background(...)``` and others to perform the operation.
      Performing a dispatch_after if a delay is specified or dispatch_group_async otherwise.
      
      - parameter delay: Delay in seconds after which the code will be executed.
@@ -193,7 +193,7 @@ public struct Async {
     
     /**
      Matches a QualityOfService case to an actual dispatch_queue_t.
-     It uses dispatch_get_main_queue() if the main queue is requested or dispatch_get_global_queue() with desired QOS_Class otherwise.
+     It uses ```dispatch_get_main_queue()``` if the main queue is requested or ```dispatch_get_global_queue()``` with desired QOS_Class otherwise.
      
      - parameter qos: The Quality Of Service that the user requests, for example .Main or .Background.
      
