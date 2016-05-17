@@ -350,6 +350,17 @@ public struct Async {
     }
 
     
+    /**
+     Function to collect calls to Async chaining methods to perform the operation.
+     ```dispatch_block_notify``` is used to chain the given block to the current running operation.
+     
+     - parameter delay: Delay in seconds after which the code will be executed.
+     - parameter block: The block that should be chained.
+     - parameter queue: Queue on which the block should be run.
+     
+     - returns: Async object for example to chain another block to.
+     - seeAlso: QualityOfService
+     */
     private func chainBlock(after delay: Double? = nil, block: dispatch_block_t, onQueue queue: dispatch_queue_t) -> Async {
         let newblock = dispatch_block_create(DISPATCH_BLOCK_INHERIT_QOS_CLASS, block)
         
