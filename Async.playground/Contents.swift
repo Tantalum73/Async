@@ -1,4 +1,10 @@
-//: Playground - noun: a place where people can play
+//
+//  Async.swift
+//
+//
+//  Created by Andreas Neusüß on 12.05.16.
+//  Copyright © 2016 Andreas Neusuess. All rights reserved.
+//
 
 import UIKit
 import XCPlayground
