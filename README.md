@@ -24,6 +24,9 @@ Async.main(block: {
 
 Both ways use the same mechanics internally so you can chose the syntax you like better.
 
+In any case, you can specify a delay (in seconds) after which the block will be executed. The delay parameter is optional and nil (=0) by default.
+<br><br>
+
 You can find examples in the Playground file. Please feel free to play around with it :)
 
 ##Installation
