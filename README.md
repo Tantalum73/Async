@@ -31,6 +31,9 @@ Just download the ```Async.swift``` file and you are ready to go.
 
 I am also working on support for the Swift Package Manager.
 
+##More Words
+I wrote a few lines about this project on [my blog](https://anerma.de/blog/open-source-project-async).
+Please let me know if you have any comments ☺️
 
 ##License
 Async is published under MIT License
