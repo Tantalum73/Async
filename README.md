@@ -5,7 +5,7 @@ Async makes it easy for you to chain operations together that should run on diff
 
 ## Usage
 You have two ways of using Async:
-You could use ```.async()``` and ```.then()``` like this:
+You could use ```.async(...)``` and ```.then(...)``` like this:
 ```Swift
 Async.async(QOS: .Background, block: {
     print("Performing Task 1")    
@@ -22,7 +22,7 @@ Async.main(block: {
 })
 ```
 
-Both ways use the same mechanics internally so you can chose the syntax you like better.
+Both ways use the saame mechanics internally so you can chose the syntax you like better.
 
 In any case, you can specify a delay (in seconds) after which the block will be executed. The delay parameter is optional and nil (=0) by default.
 <br><br>
