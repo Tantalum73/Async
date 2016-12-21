@@ -74,7 +74,7 @@ public enum QualityOfService {
 
 public struct Async {
     
-    /// Storing the block in a var to attach completion blocks to it.
+    /// Storing the block in a DispatchWorkItem to attach completion blocks to it.
     fileprivate var workItem : DispatchWorkItem
     
     /**
@@ -287,7 +287,7 @@ public struct Async {
     - returns: Async object for example to chain another block to.
     - seeAlso: QualityOfService
      */
-    public func main(_ after: Double? = nil, block: @escaping ()->()) -> Async {
+    @discardableResult public func main(_ after: Double? = nil, block: @escaping ()->()) -> Async {
         let queue = Async.queueForQualityOfService(.main)
         
         return chainBlock(after: after, block: block, onQueue: queue)
@@ -305,7 +305,7 @@ public struct Async {
      - returns: Async object for example to chain another block to.
      - seeAlso: QualityOfService
      */
-    public func background(_ after: Double? = nil, block: @escaping ()->()) -> Async {
+    @discardableResult public func background(_ after: Double? = nil, block: @escaping ()->()) -> Async {
         let queue = Async.queueForQualityOfService(.background)
         
         return chainBlock(after: after, block: block, onQueue: queue)
@@ -323,7 +323,7 @@ public struct Async {
      - returns: Async object for example to chain another block to.
      - seeAlso: QualityOfService
      */
-    public func userInteractive(_ after: Double? = nil, block: @escaping ()->()) -> Async {
+    @discardableResult public func userInteractive(_ after: Double? = nil, block: @escaping ()->()) -> Async {
         let queue = Async.queueForQualityOfService(.userInteractive)
         
         return chainBlock(after: after, block: block, onQueue: queue)
@@ -341,7 +341,7 @@ public struct Async {
      - returns: Async object for example to chain another block to.
      - seeAlso: QualityOfService
      */
-    public func userInitiated(_ after: Double? = nil, block: @escaping ()->()) -> Async {
+    @discardableResult public func userInitiated(_ after: Double? = nil, block: @escaping ()->()) -> Async {
         let queue = Async.queueForQualityOfService(.userInitiated)
         
         return chainBlock(after: after, block: block, onQueue: queue)
@@ -359,7 +359,7 @@ public struct Async {
      - returns: Async object for example to chain another block to.
      - seeAlso: QualityOfService
      */
-    public func utility(_ after: Double? = nil, block: @escaping ()->()) -> Async {
+    @discardableResult public func utility(_ after: Double? = nil, block: @escaping ()->()) -> Async {
         let queue = Async.queueForQualityOfService(.utility)
         
         return chainBlock(after: after, block: block, onQueue: queue)
@@ -374,7 +374,7 @@ public struct Async {
      - returns: Async object for example to chain another block to.
      - seeAlso: QualityOfService
      */
-    public func defaultPriority(_ after: Double? = nil, block: @escaping ()->()) -> Async {
+    @discardableResult public func defaultPriority(_ after: Double? = nil, block: @escaping ()->()) -> Async {
         let queue = Async.queueForQualityOfService(.default)
         
         return chainBlock(after: after, block: block, onQueue: queue)
@@ -393,7 +393,7 @@ public struct Async {
      - returns: Async object for example to chain another block to.
      - seeAlso: QualityOfService
      */
-    public func then(_ after: Double? = nil, QOS: QualityOfService, block: @escaping ()->()) -> Async {
+    @discardableResult public func then(_ after: Double? = nil, QOS: QualityOfService, block: @escaping ()->()) -> Async {
         let queue = Async.queueForQualityOfService(QOS)
         
         return chainBlock(after: after, block: block, onQueue: queue)
