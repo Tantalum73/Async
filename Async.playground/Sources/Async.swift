@@ -399,6 +399,30 @@ public struct Async {
         return chainBlock(after: after, block: block, onQueue: queue)
     }
 
+    /// This function cancels the current Async object after a delay or immediately.
+    ///
+    /// - Parameter delay: If provided, the operation will be cancelled after the specified amount of time has passed.
+    public func cancel(after delay: Double? = nil) {
+        if delay != nil && delay! > 0 {
+            //delay specified
+            _ = Async.async(delay, QOS: .main, block: {
+                self.workItem.cancel()
+            })
+        }
+        else {
+            workItem.cancel()
+        }
+    }
+    
+    
+    /// This function cancels the current Async object after a provided Async object is done.
+    ///
+    /// - Parameter async: The current action will be cancelled after this argument is done.
+    public func cancel(after async: Async) {
+        async.then(QOS: .main) { 
+            self.cancel()
+        }
+    }
     
     /**
      Function to collect calls to Async chaining methods to perform the operation.
