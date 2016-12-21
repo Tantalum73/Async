@@ -69,13 +69,13 @@ import Foundation
  ref: https://developer.apple.com/library/ios/documentation/Performance/Conceptual/EnergyGuide-iOS/PrioritizeWorkWithQoS.html
  */
 public enum QualityOfService {
-    case Main, UserInteractive, UserInitiated, Default, Utility, Background
+    case main, userInteractive, userInitiated, `default`, utility, background
 }
 
 public struct Async {
     
     /// Storing the block in a var to attach completion blocks to it.
-    private var block : dispatch_block_t
+    fileprivate var workItem : DispatchWorkItem
     
     /**
      Perform a async operation on the main queue.
@@ -90,8 +90,8 @@ public struct Async {
      - returns: Async object for example to chain another block to.
      - seeAlso: QualityOfService
      */
-    public static func main(after: Double? = nil, block: dispatch_block_t) -> Async {
-        let queue = Async.queueForQualityOfService(.Main)
+    public static func main(_ after: Double? = nil, block: @escaping ()->()) -> Async {
+        let queue = Async.queueForQualityOfService(.main)
         return Async.scheduleBlock(after: after, block: block, onQueue: queue)
     }
     
@@ -108,8 +108,8 @@ public struct Async {
      - returns: Async object for example to chain another block to.
      - seeAlso: QualityOfService
      */
-    public static func background(after: Double? = nil, block: dispatch_block_t) -> Async {
-        let queue = Async.queueForQualityOfService(.Background)
+    public static func background(_ after: Double? = nil, block: @escaping ()->()) -> Async {
+        let queue = Async.queueForQualityOfService(.background)
         
         return Async.scheduleBlock(after: after, block: block, onQueue: queue)
     }
@@ -127,8 +127,8 @@ public struct Async {
      - returns: Async object for example to chain another block to.
      - seeAlso: QualityOfService
      */
-    public static func userInteractive(after: Double? = nil, block: dispatch_block_t) -> Async {
-        let queue = Async.queueForQualityOfService(.UserInteractive)
+    public static func userInteractive(_ after: Double? = nil, block: @escaping ()->()) -> Async {
+        let queue = Async.queueForQualityOfService(.userInteractive)
         
         return Async.scheduleBlock(after: after, block: block, onQueue: queue)
     }
@@ -146,8 +146,8 @@ public struct Async {
      - returns: Async object for example to chain another block to.
      - seeAlso: QualityOfService
      */
-    public static func userInitiated(after: Double? = nil, block: dispatch_block_t) -> Async {
-        let queue = Async.queueForQualityOfService(.UserInitiated)
+    public static func userInitiated(_ after: Double? = nil, block: @escaping ()->()) -> Async {
+        let queue = Async.queueForQualityOfService(.userInitiated)
         
         return Async.scheduleBlock(after: after, block: block, onQueue: queue)
     }
@@ -165,8 +165,8 @@ public struct Async {
      - returns: Async object for example to chain another block to.
      - seeAlso: QualityOfService
      */
-    public static func utility(after: Double? = nil, block: dispatch_block_t) -> Async {
-        let queue = Async.queueForQualityOfService(.Utility)
+    public static func utility(_ after: Double? = nil, block: @escaping ()->()) -> Async {
+        let queue = Async.queueForQualityOfService(.utility)
         
         return Async.scheduleBlock(after: after, block: block, onQueue: queue)
     }
@@ -180,8 +180,8 @@ public struct Async {
      - returns: Async object for example to chain another block to.
      - seeAlso: QualityOfService
      */
-    public static func defaultPriority(after: Double? = nil, block: dispatch_block_t) -> Async {
-        let queue = Async.queueForQualityOfService(.Default)
+    public static func defaultPriority(_ after: Double? = nil, block: @escaping ()->()) -> Async {
+        let queue = Async.queueForQualityOfService(.default)
         
         return Async.scheduleBlock(after: after, block: block, onQueue: queue)
     }
@@ -201,7 +201,7 @@ public struct Async {
      - returns: Async object for example to chain another block to.
      - seeAlso: QualityOfService
      */
-    public static func async(after after: Double? = nil, QOS: QualityOfService, block: dispatch_block_t) -> Async {
+    public static func async(_ after: Double? = nil, QOS: QualityOfService, block: @escaping ()->()) -> Async {
         let queue = Async.queueForQualityOfService(QOS)
         
         return Async.scheduleBlock(after: after, block: block, onQueue: queue)
@@ -218,24 +218,26 @@ public struct Async {
      
      - returns: Async object for example to chain another block to.
      */
-    private static func scheduleBlock(after delay: Double? = nil, block: dispatch_block_t, onQueue queue: dispatch_queue_t) -> Async {
+    fileprivate static func scheduleBlock(after delay: Double? = nil, block: @escaping ()->(), onQueue queue: DispatchQueue) -> Async {
         
                 // Creating a copy by inheriting the original QOS_Class to chain other blocks by using dispatch_notify to it.
-        let newblock = dispatch_block_create(DISPATCH_BLOCK_INHERIT_QOS_CLASS, block)
+//        let newblock = dispatch_block_create(__DISPATCH_BLOCK_INHERIT_QOS_CLASS, block)
+        
+        let newblock = DispatchWorkItem(qos: .default, flags: .inheritQoS, block: block)
+        
         
         if let delayInSeconds = delay {
-            let popTime = dispatch_time(DISPATCH_TIME_NOW,
-                                        Int64(delayInSeconds * Double(NSEC_PER_SEC)))
-            dispatch_after(popTime, queue, newblock)
+            
+            queue.asyncAfter(deadline: .now() + delayInSeconds, execute: newblock)
         }
         else {
-            let group = dispatch_group_create()
+            let group = DispatchGroup()
             
-            dispatch_group_async(group, queue, newblock)
+            queue.async(group: group, execute: newblock)
         }
         
         
-        return Async(block: newblock)
+        return Async(workItem: newblock)
     }
     
     
@@ -247,26 +249,26 @@ public struct Async {
      
      - returns: A queue of type dispatch_queue_t. Blocks can be scheduled on this queue.
      */
-    private static func queueForQualityOfService(qos: QualityOfService) -> dispatch_queue_t {
+    fileprivate static func queueForQualityOfService(_ qos: QualityOfService) -> DispatchQueue {
         
-        let qualityOfServiceClass : qos_class_t
+        let qualityOfServiceClass : DispatchQoS.QoSClass
         
         switch qos {
-        case .Main:
-            return dispatch_get_main_queue()
-        case .UserInteractive:
-            qualityOfServiceClass = QOS_CLASS_USER_INTERACTIVE
-        case .UserInitiated:
-            qualityOfServiceClass = QOS_CLASS_USER_INITIATED
-        case .Default:
-            qualityOfServiceClass = QOS_CLASS_DEFAULT
-        case .Utility:
-            qualityOfServiceClass = QOS_CLASS_UTILITY
-        case .Background:
-            qualityOfServiceClass = QOS_CLASS_BACKGROUND
+        case .main:
+            return DispatchQueue.main
+        case .userInteractive:
+            qualityOfServiceClass = DispatchQoS.QoSClass.userInteractive//DispatchQoS.userInteractive//DispatchQoS.QoSClass.userInteractive
+        case .userInitiated:
+            qualityOfServiceClass = DispatchQoS.QoSClass.userInitiated
+        case .default:
+            qualityOfServiceClass = DispatchQoS.QoSClass.default
+        case .utility:
+            qualityOfServiceClass = DispatchQoS.QoSClass.utility
+        case .background:
+            qualityOfServiceClass = DispatchQoS.QoSClass.background
         }
         
-        let queue = dispatch_get_global_queue(qualityOfServiceClass, 0)
+        let queue = DispatchQueue.global(qos: qualityOfServiceClass)
         return queue
         
     }
@@ -285,8 +287,8 @@ public struct Async {
     - returns: Async object for example to chain another block to.
     - seeAlso: QualityOfService
      */
-    public func main(after after: Double? = nil, block: dispatch_block_t) -> Async {
-        let queue = Async.queueForQualityOfService(.Main)
+    public func main(_ after: Double? = nil, block: @escaping ()->()) -> Async {
+        let queue = Async.queueForQualityOfService(.main)
         
         return chainBlock(after: after, block: block, onQueue: queue)
     }
@@ -303,8 +305,8 @@ public struct Async {
      - returns: Async object for example to chain another block to.
      - seeAlso: QualityOfService
      */
-    public func background(after after: Double? = nil, block: dispatch_block_t) -> Async {
-        let queue = Async.queueForQualityOfService(.Background)
+    public func background(_ after: Double? = nil, block: @escaping ()->()) -> Async {
+        let queue = Async.queueForQualityOfService(.background)
         
         return chainBlock(after: after, block: block, onQueue: queue)
     }
@@ -321,8 +323,8 @@ public struct Async {
      - returns: Async object for example to chain another block to.
      - seeAlso: QualityOfService
      */
-    public func userInteractive(after after: Double? = nil, block: dispatch_block_t) -> Async {
-        let queue = Async.queueForQualityOfService(.UserInteractive)
+    public func userInteractive(_ after: Double? = nil, block: @escaping ()->()) -> Async {
+        let queue = Async.queueForQualityOfService(.userInteractive)
         
         return chainBlock(after: after, block: block, onQueue: queue)
     }
@@ -339,8 +341,8 @@ public struct Async {
      - returns: Async object for example to chain another block to.
      - seeAlso: QualityOfService
      */
-    public func userInitiated(after after: Double? = nil, block: dispatch_block_t) -> Async {
-        let queue = Async.queueForQualityOfService(.UserInitiated)
+    public func userInitiated(_ after: Double? = nil, block: @escaping ()->()) -> Async {
+        let queue = Async.queueForQualityOfService(.userInitiated)
         
         return chainBlock(after: after, block: block, onQueue: queue)
     }
@@ -357,8 +359,8 @@ public struct Async {
      - returns: Async object for example to chain another block to.
      - seeAlso: QualityOfService
      */
-    public func utility(after after: Double? = nil, block: dispatch_block_t) -> Async {
-        let queue = Async.queueForQualityOfService(.Utility)
+    public func utility(_ after: Double? = nil, block: @escaping ()->()) -> Async {
+        let queue = Async.queueForQualityOfService(.utility)
         
         return chainBlock(after: after, block: block, onQueue: queue)
     }
@@ -372,8 +374,8 @@ public struct Async {
      - returns: Async object for example to chain another block to.
      - seeAlso: QualityOfService
      */
-    public func defaultPriority(after after: Double? = nil, block: dispatch_block_t) -> Async {
-        let queue = Async.queueForQualityOfService(.Default)
+    public func defaultPriority(_ after: Double? = nil, block: @escaping ()->()) -> Async {
+        let queue = Async.queueForQualityOfService(.default)
         
         return chainBlock(after: after, block: block, onQueue: queue)
     }
@@ -391,7 +393,7 @@ public struct Async {
      - returns: Async object for example to chain another block to.
      - seeAlso: QualityOfService
      */
-    public func then(after after: Double? = nil, QOS: QualityOfService, block: dispatch_block_t) -> Async {
+    public func then(_ after: Double? = nil, QOS: QualityOfService, block: @escaping ()->()) -> Async {
         let queue = Async.queueForQualityOfService(QOS)
         
         return chainBlock(after: after, block: block, onQueue: queue)
@@ -409,32 +411,34 @@ public struct Async {
      - returns: Async object for example to chain another block to.
      - seeAlso: QualityOfService
      */
-    private func chainBlock(after delay: Double? = nil, block: dispatch_block_t, onQueue queue: dispatch_queue_t) -> Async {
-        let newblock = dispatch_block_create(DISPATCH_BLOCK_INHERIT_QOS_CLASS, block)
+    fileprivate func chainBlock(after delay: Double? = nil, block: @escaping ()->(), onQueue queue: DispatchQueue) -> Async {
+//        let newblock = dispatch_block_create(__DISPATCH_BLOCK_INHERIT_QOS_CLASS, block)
+
+        let newblock = DispatchWorkItem(qos: .default, flags: .inheritQoS, block: block)
         
-        let blockToSchedule: dispatch_block_t
+        let blockToSchedule: DispatchWorkItem
         
         if let delayInSeconds = delay {
             //Wrap the blog inside a new blog that perform the delay and is executed immediately after it is notified.
             let delayedExecutionBlock = {
                 
-                let popTime = dispatch_time(DISPATCH_TIME_NOW,
-                                            Int64(delayInSeconds * Double(NSEC_PER_SEC)))
-                dispatch_after(popTime, queue, newblock)
+                queue.asyncAfter(deadline: .now() + delayInSeconds, execute: newblock)
             }
             
-            blockToSchedule = dispatch_block_create(DISPATCH_BLOCK_INHERIT_QOS_CLASS, delayedExecutionBlock)
+//            blockToSchedule = dispatch_block_create(__DISPATCH_BLOCK_INHERIT_QOS_CLASS, delayedExecutionBlock)
             
+             blockToSchedule = DispatchWorkItem(qos: .default, flags: .inheritQoS, block: delayedExecutionBlock)
         }
         else {
             //No delay specified, just register the block copy (newblog) for chaining.
             blockToSchedule = newblock
         }
         
-        dispatch_block_notify(self.block, queue, blockToSchedule)
+//        dispatch_block_notify(self.block, queue, blockToSchedule)
+//        let workItem = DispatchWorkItem(qos: .background, flags: .inheritQoS, block: self.block)
         
-        
-        return Async(block: newblock)
+        self.workItem.notify(queue: queue, execute: blockToSchedule)
+        return Async(workItem: newblock)
     }
 }
 
